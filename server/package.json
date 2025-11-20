@@ -1,4 +1,11 @@
 {
+  "name": "ecomoney-server",
+  "version": "1.0.0",
+  "description": "EcoMoney Backend Server",
+  "main": "index.js",
+  "author": "Tanveen Alharih",
+  "license": "MIT",
+  "type": "module",
   "scripts":{
     "start":"node index.js",
     "dev":"nodemon index.js"
