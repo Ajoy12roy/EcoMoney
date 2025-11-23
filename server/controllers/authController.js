@@ -4,7 +4,7 @@ const UserModel = require('../modules/userModel');
 const transporter = require('../utils/emailTransporter');
 
 // User Registration Cotroller
-const register = async (req, res) => {
+const signUp = async (req, res) => {
     const { name, phoneNo, email, password } = req.body;
     //check if all fields are provided 
     if (!name || !phoneNo || !email || !password) {
@@ -261,7 +261,7 @@ const resetPassword = async (req, res) => {
 
 
 module.exports = {
-    register,
+    signUp,
     login,
     logout,
     sendVerificationOtp,

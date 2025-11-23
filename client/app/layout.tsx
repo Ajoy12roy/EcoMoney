@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const scienceGothicFont = localFont({
+  src: '../public/fonts/Science-Gothic.woff2',
+  weight: '400',
+  style: 'normal',
+  variable: '--font-science-gothic',
+}) 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
