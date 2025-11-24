@@ -3,7 +3,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db.js');
-// const users = require('./routes/userRoute.js');
+const authRoute = require('./routes/authRoute.js')
+
 
 
 dotenv.config();
@@ -11,12 +12,13 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 connectDB();
 
 app.use(cors({credentials: true, }));
 app.use(cookieParser());
 
+app.use('/api/auth', authRoute);
 
 app.get('/', (req, res) => {
     res.send('API is running....');

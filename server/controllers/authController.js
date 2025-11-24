@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const UserModel = require('../modules/userModel');
-const transporter = require('../utils/emailTransporter');
+const transporter = require('../config/nodemailer');
 
 // User Registration Cotroller
 const signUp = async (req, res) => {
