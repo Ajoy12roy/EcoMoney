@@ -6,11 +6,8 @@ import RotatingBorderCard from "./RotatingBorderCard";
 
 
 
-// Fallback Button component to avoid the "Cannot find module '@/components/ui/button'" TypeScript error.
-// Replace this with the real Button component or correct import path when your UI library is available.
-const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button className={className} {...props}>{children}</button>
-);
+// If you need a Button, import it from your UI library:
+// import Button from "@/components/ui/button";
 
 import Card, { CardContent } from "@/components/ui/card";
 
@@ -42,11 +39,15 @@ const data = [
 ];
 
 
+
 export default function Dashboard() {
+
+  const [open, setOpen] = React.useState(false);
+
   return (
     <div className="w-full p-10 space-y-20">
       {/* Top Summary Cards */}
-      <div className="grid grid-cols-2 mt-4 md:grid-cols-4 gap-4">
+      <div className="grid  mt-4 md:grid-cols-4 gap-4">
        
           <div className="flex items-center gap-3 p-5 rounded-2xl shadow-md border border-blue-200 transition duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-green-400">
             <div className="bg-green-100 p-3 rounded-xl">
@@ -106,9 +107,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Pie Chart Card */}
         <RotatingBorderCard>
-        <Card className="rounded-2xl shadow-md ">
+        <Card className="rounded-2xl shadow-md h-110 ">
           <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Spending by Category</h3>
+            <h3 className="text-xl font-semibold mb-4 text-orange-500 ">Spending by Category</h3>
             <div className="flex justify-center">
               <PieChart width={300} height={300}>
                 <Pie
@@ -131,75 +132,58 @@ export default function Dashboard() {
         </RotatingBorderCard>
 
         {/* Right Transactions */}
-        <Card className="rounded-2xl shadow-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Recent Transactions</h3>
-              <Button className="flex gap-2 rounded-full bg-green-500 hover:bg-green-600 text-white px-4">
-                <Plus size={18} /> Add
-              </Button>
-            </div>
+        <div className="">
+          {/* Recent Transactions */}
+          <Card className="rounded-2xl shadow-sm border border-green-300">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold">Recent Transactions</h3>
 
-            <div className="space-y-5">
-              {/* Transaction Item */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-100 p-3 rounded-xl">
-                    <Wallet className="text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Monthly Salary</p>
-                    <p className="text-gray-500 text-sm">Salary • Nov 1, 2025</p>
-                  </div>
-                </div>
-                <p className="text-green-600 font-semibold">+৳50,000</p>
+                <button
+                  onClick={() => setOpen(true)}
+                   className="px-4 py-1.5 rounded-full text-blue-600 font-medium backdrop-blur-md  bg-white/20 
+  border border-white/40 shadow-lg  hover:text-green-600 transition">
+                  View All
+                </button>
               </div>
 
-              {/* Rent */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-red-100 p-3 rounded-xl">
-                    <TrendingDown className="text-red-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">House Rent</p>
-                    <p className="text-gray-500 text-sm">Housing • Nov 5, 2025</p>
-                  </div>
-                </div>
-                <p className="text-red-600 font-semibold">-৳12,000</p>
+              <div className="text-center py-10 text-gray-500">
+                No transactions yet
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Groceries */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-pink-100 p-3 rounded-xl">
-                    <TrendingDown className="text-pink-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Weekly Groceries</p>
-                    <p className="text-gray-500 text-sm">Food • Nov 10, 2025</p>
-                  </div>
-                </div>
-                <p className="text-red-600 font-semibold">-৳4,000</p>
-              </div>
+          {/* Spending by Category */}
+          <Card className="rounded-2xl shadow-sm border border-gray-200 mt-6">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Spending by Category</h3>
 
-              {/* Internet Bill */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-red-100 p-3 rounded-xl">
-                    <TrendingDown className="text-red-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Internet Bill</p>
-                    <p className="text-gray-500 text-sm">Utilities • Nov 12, 2025</p>
-                  </div>
-                </div>
-                <p className="text-red-600 font-semibold">-৳2,500</p>
+              <div className="text-center py-10 text-gray-500">
+                No expenses yet
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* ------ MODAL ------ */}
+      {open && (
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-[400px] shadow-lg">
+            <h2 className="text-xl font-semibold mb-4">All Transactions</h2>
+
+            <p className="text-gray-500 mb-6 ">You have no transactions yet.</p>
+
+            <button
+              onClick={() => setOpen(false)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

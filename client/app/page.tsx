@@ -1,13 +1,12 @@
-
+'use client'
 import HomePage from '@/app/home/page'
-import Image from "next/image";
-import Login from '@/app/login/page';
-import Dashboard from './dashboard/page';
+import AppContextProvider from '@/context/AppContext';
 
 export default function Home() {
   return (
-    <>
-    <Dashboard />
-    </>
+    <AppContextProvider>
+    <HomePage />
+    </AppContextProvider>
+
   );
 }
