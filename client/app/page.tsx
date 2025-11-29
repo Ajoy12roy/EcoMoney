@@ -1,11 +1,12 @@
 'use client'
-import HomePage from '@/app/home/page'
+
 import AppContextProvider from '@/context/AppContext';
+import TransactionsPage from './transaction/page';
 
 export default function Home() {
   return (
     <AppContextProvider>
-    <HomePage />
+    <TransactionsPage />
     </AppContextProvider>
 
   );

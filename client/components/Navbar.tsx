@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutGrid, ReceiptText, Settings, LogOut, Menu, X } from 'lucide-react';
@@ -25,7 +26,7 @@ export default function Navbar() {
         <Link href="/dashboard" className="flex items-center group z-50 gap-2">
           <div className="rounded-full flex items-center justify-center text-white font-bold text-2xl group-hover:scale-105 transition-transform">
             {/* Ensure 'logo.svg' is inside your 'public' folder */}
-            <img src="/logo.svg" alt="EcoMoney Logo" className="w-14" /> 
+            <Image src="/logo.svg" alt="EcoMoney Logo" className="w-14" /> 
           </div>
           <span className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">EcoMoney</span>
         </Link>
@@ -58,9 +59,9 @@ export default function Navbar() {
           {/* 1. PROFILE ICON (Visible on ALL screens) */}
           {/* Sits before Logout (Desktop) and before Menu (Mobile) */}
           <Link href="/profile" className="relative group">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden transition-all hover:border-emerald-400 hover:shadow-md flex-shrink-0">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden transition-all hover:border-emerald-400 hover:shadow-md shrink-0">
               {/* Replace with your actual user image URL */}
-              <img 
+              <Image 
                 src="https://i.pravatar.cc/150?img=32" 
                 alt="Profile" 
                 className="w-full h-full object-cover"
