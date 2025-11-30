@@ -1,26 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import RotatingBorderCard from "./RotatingBorderCard";
-
-
-
-
-// If you need a Button, import it from your UI library:
-// import Button from "@/components/ui/button";
-
 import Card, { CardContent } from "@/components/ui/card";
-
-// Fallback Card/CardContent components to avoid the "Cannot find module '@/components/ui/card'" TypeScript error.
-// Replace these with the real components or correct import path when your UI library is available.
-/* 
-const Card: React.FC<React.ComponentProps<'div'>> = ({ children, className, ...props }: React.ComponentProps<'div'>) => (
-  <div className={className} {...props}>{children}</div>
-);
-const CardContent: React.FC<React.ComponentProps<'div'>> = ({ children, className, ...props }: React.ComponentProps<'div'>) => (
-  <div className={className} {...props}>{children}</div>
-);
-*/
 import {
   Wallet,
   TrendingUp,
@@ -30,6 +12,7 @@ import {
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import Navbar from "@/components/Navbar";
+import { AppContext } from "@/context/AppContext";
 
 const data = [
   { name: "Housing", value: 55, color: "#FF5467" },
@@ -39,18 +22,33 @@ const data = [
   { name: "Entertainment", value: 5, color: "#FFA84D" },
 ];
 
-
-
 export default function Dashboard() {
-
   const [open, setOpen] = React.useState(false);
+
+  // 1. Get User Data from Context
+  const { userData, getUserData } = useContext(AppContext) as any;
+
+  // 2. Fetch fresh data on component mount
+  useEffect(() => {
+    if (getUserData) {
+      getUserData();
+    }
+  }, []);
+
+  // 3. Extract Financial Data (Default to 0 if loading/null)
+  const earnings = userData?.totalEarnings || 0;
+  const spending = userData?.totalSpending || 0;
+  const savings = userData?.totalSavings || 0;
+  
+  // Backend provides this, but we fallback to calculation if needed
+  const balance = userData?.totalBalance ?? (earnings - (spending + savings));
 
   return (
     <>
     <Navbar/>
     <div className="w-full p-10 space-y-20">
       {/* Top Summary Cards */}
-      <div className="grid  mt-4 md:grid-cols-4 gap-4">
+      <div className="grid mt-4 md:grid-cols-4 gap-4">
        
           <div className="flex items-center gap-3 p-5 rounded-2xl shadow-md border border-blue-200 transition duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-green-400">
             <div className="bg-green-100 p-3 rounded-xl">
@@ -58,26 +56,28 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-gray-500 text-sm">Total Balance</p>
-              <h2 className="text-xl font-semibold">৳32,200</h2>
+              {/* Display Dynamic Balance */}
+              <h2 className="text-xl font-semibold">৳{balance.toLocaleString()}</h2>
             </div>
           </div>
         
 
         <Card className="rounded-2xl shadow-md border border-teal-200 transition duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-green-400">
           <CardContent className="p-5 ">
-            <div className="flex items-center gap-3  ">
+            <div className="flex items-center gap-3">
               <div className="bg-green-100 p-3 rounded-xl ">
                 <TrendingUp className="text-green-600" />
               </div>
               <div className="">
                 <p className="text-gray-500 text-sm">Total Earnings</p>
-                <h2 className="text-xl font-semibold">৳53,000</h2>
+                {/* Display Dynamic Earnings */}
+                <h2 className="text-xl font-semibold">৳{earnings.toLocaleString()}</h2>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm border border-orange-200  transition duration-300 hover:shadow-lg hover:-translate-y-0.5  hover:border-green-500 ">
+        <Card className="rounded-2xl shadow-sm border border-orange-200 transition duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-green-500 ">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
               <div className="bg-red-100 p-3 rounded-xl">
@@ -85,13 +85,14 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Total Spending</p>
-                <h2 className="text-xl font-semibold">৳20,800</h2>
+                {/* Display Dynamic Spending */}
+                <h2 className="text-xl font-semibold">৳{spending.toLocaleString()}</h2>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl shadow-sm border border-yellow-200  transition duration-300 hover:shadow-lg hover:-translate-y-0.5  hover:border-green-500 ">
+        <Card className="rounded-2xl shadow-sm border border-yellow-200 transition duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-green-500 ">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
               <div className="bg-green-100 p-3 rounded-xl">
@@ -99,7 +100,8 @@ export default function Dashboard() {
               </div>
               <div>
                 <p className="text-gray-500 text-sm">Total Savings</p>
-                <h2 className="text-xl font-semibold">৳55,200</h2>
+                {/* Display Dynamic Savings */}
+                <h2 className="text-xl font-semibold">৳{savings.toLocaleString()}</h2>
               </div>
             </div>
           </CardContent>
@@ -144,8 +146,8 @@ export default function Dashboard() {
 
                 <button
                   onClick={() => setOpen(true)}
-                   className="px-4 py-1.5 rounded-full text-blue-600 font-medium backdrop-blur-md  bg-white/20 
-  border border-white/40 shadow-lg  hover:text-green-600 transition">
+                   className="px-4 py-1.5 rounded-full text-blue-600 font-medium backdrop-blur-md bg-white/20 
+  border border-white/40 shadow-lg hover:text-green-600 transition">
                   View All
                 </button>
               </div>

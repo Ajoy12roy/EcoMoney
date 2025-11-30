@@ -1,17 +1,19 @@
 const UserModel = require('../modules/userModel');
 const cloudinary = require('cloudinary').v2;
-const fs = require('fs'); // Import FS to delete temp files
 
 // 1. Get Logged In User Data
 const getUserData = async (req, res) => {
     try {
-        const { userId } = req.body; // Injected by userMiddleware
+        const { userId } = req.body; 
         
         const user = await UserModel.findById(userId);
 
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
+
+        // Calculate Balance on the fly
+        const calculatedBalance = (user.totalEarnings || 0) - ((user.totalSpending || 0) + (user.totalSavings || 0));
 
         res.json({
             success: true,
@@ -21,7 +23,12 @@ const getUserData = async (req, res) => {
                 phoneNo: user.phoneNo,
                 email: user.email,
                 image: user.image,
-                isAccountVerified: user.isAccountVerified
+                isAccountVerified: user.isAccountVerified,
+                // Financials
+                totalEarnings: user.totalEarnings,
+                totalSpending: user.totalSpending,
+                totalSavings: user.totalSavings,
+                totalBalance: calculatedBalance
             }
         });
 
@@ -30,15 +37,11 @@ const getUserData = async (req, res) => {
     }
 }
 
-// 2. Update Profile (Name, Phone, Image)
+// 2. Update Profile (Text + Image + Financials)
 const updateUserProfile = async (req, res) => {
     try {
-        const { userId, name, phoneNo } = req.body;
-        const imageFile = req.file; // From Multer
-
-        console.log("Update Request Received for User:", userId);
-        console.log("Data:", { name, phoneNo });
-        if(imageFile) console.log("Image File:", imageFile.path);
+        const { userId, name, phoneNo, totalEarnings, totalSpending, totalSavings } = req.body;
+        const imageFile = req.file;
 
         if (!userId) {
             return res.status(400).json({ message: 'User ID is missing' });
@@ -53,20 +56,18 @@ const updateUserProfile = async (req, res) => {
         if (name) user.name = name;
         if (phoneNo) user.phoneNo = phoneNo;
 
-        // Update Image if provided
+        // Update Financials (if provided)
+        if (totalEarnings !== undefined) user.totalEarnings = Number(totalEarnings);
+        if (totalSpending !== undefined) user.totalSpending = Number(totalSpending);
+        if (totalSavings !== undefined) user.totalSavings = Number(totalSavings);
+
+        // Update Image
         if (imageFile) {
             try {
-                // Upload to Cloudinary
                 const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
                     resource_type: 'image'
                 });
-                
-                console.log("Cloudinary Upload Success. URL:", imageUpload.secure_url);
                 user.image = imageUpload.secure_url;
-
-                // Optional: Delete the local temp file after upload
-                // fs.unlinkSync(imageFile.path); 
-
             } catch (uploadError) {
                 console.error("Cloudinary Error:", uploadError);
                 return res.status(500).json({ message: 'Image upload failed', error: uploadError.message });
@@ -75,6 +76,9 @@ const updateUserProfile = async (req, res) => {
 
         await user.save();
 
+        // Calculate new balance for response
+        const newBalance = (user.totalEarnings || 0) - ((user.totalSpending || 0) + (user.totalSavings || 0));
+
         res.json({ 
             success: true, 
             message: 'Profile updated successfully',
@@ -82,7 +86,11 @@ const updateUserProfile = async (req, res) => {
                 name: user.name,
                 phoneNo: user.phoneNo,
                 email: user.email,
-                image: user.image
+                image: user.image,
+                totalEarnings: user.totalEarnings,
+                totalSpending: user.totalSpending,
+                totalSavings: user.totalSavings,
+                totalBalance: newBalance
             }
         });
 

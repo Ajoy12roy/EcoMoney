@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Edit2, Lock, Camera, Check, Sparkles, User, Smartphone, Mail } from 'lucide-react';
 import { AppContext } from '@/context/AppContext';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation'; // Import Router
+import { useRouter } from 'next/navigation';
 
 // --- Reusable Editable Component ---
 interface EditableFieldProps {
@@ -19,10 +19,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, value, icon, onSav
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
 
-  // Update input value when prop updates
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+  useEffect(() => { setInputValue(value); }, [value]);
 
   const handleEditClick = () => { setInputValue(value); setIsEditing(true); };
   const handleDoneClick = () => { onSave(inputValue); setIsEditing(false); };
@@ -61,7 +58,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, value, icon, onSav
 // --- Main Profile Component ---
 const ProfileSettings = () => {
   const { userData, backendUrl, getUserData } = useContext(AppContext) as any;
-  const router = useRouter(); // Initialize Router
+  const router = useRouter();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -71,14 +68,12 @@ const ProfileSettings = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load User Data on Mount
+  // Fetch Data on Load
   useEffect(() => {
-    if (getUserData) {
-        getUserData();
-    }
+    if (getUserData) getUserData();
   }, []);
 
-  // Sync State with Context
+  // Sync State
   useEffect(() => {
     if (userData) {
       setName(userData.name || '');
@@ -92,15 +87,14 @@ const ProfileSettings = () => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      setImage(URL.createObjectURL(file));
+      setImage(URL.createObjectURL(file)); // Preview immediately
     }
   };
 
   const handleSaveToBackend = async () => {
     try {
       const formData = new FormData();
-      
-      if(!userData || !userData.userId) {
+      if(!userData?.userId) {
           toast.error("User ID not found. Try logging in again.");
           return;
       }
@@ -108,10 +102,7 @@ const ProfileSettings = () => {
       formData.append('userId', userData.userId);
       formData.append('name', name);
       formData.append('phoneNo', phone);
-      
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
+      if (imageFile) formData.append('image', imageFile);
 
       const response = await fetch(`${backendUrl}/api/user/update-profile`, {
         method: 'PUT',
@@ -122,28 +113,21 @@ const ProfileSettings = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Profile Updated Successfully!");
+        toast.success("Profile Updated!");
+        if (getUserData) await getUserData(); // Refresh Context
         
-        // 1. Refresh Global Data
-        if (getUserData) await getUserData(); 
-        
-        // 2. Redirect to Dashboard (with small delay for UX)
-        setTimeout(() => {
-            router.push('/dashboard');
-        }, 500);
-
+        // Redirect to Dashboard
+        setTimeout(() => router.push('/dashboard'), 500);
       } else {
         toast.error(data.message || "Update failed");
       }
     } catch (error) {
-      console.error(error);
       toast.error("Error updating profile");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#103b67] flex items-center justify-center p-4 md:p-8 font-sans">
-      
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[24px 24px]"></div>
       <div className="absolute inset-0 bg-linear-to-tr from-indigo-100 via-transparent to-cyan-100 opacity-60"></div>
 
@@ -152,45 +136,30 @@ const ProfileSettings = () => {
 
         <div className="relative p-6 md:p-12 flex flex-col md:flex-row gap-8 md:gap-12">
           
-          {/* Left Side: Photo */}
+          {/* Photo Section */}
           <div className="flex flex-col items-center md:w-1/3 border-b border-indigo-50 pb-8 md:border-b-0 md:border-r md:pb-0 md:pr-8">
             <motion.div className="relative mb-4 md:mb-6 group" whileHover={{ scale: 1.02 }}>
               <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-linear-to-br from-indigo-500 via-purple-500 to-cyan-500 shadow-xl">
                 <div className="w-full h-full rounded-full overflow-hidden border-4 border-white relative bg-white">
                   <img
-                    src={image || "https://placehold.co/400x400?text=User"}
+                    // Fix: Add cache buster '?t=' to ensure image updates instantly
+                    src={image ? `${image}` : "https://placehold.co/400x400?text=User"}
                     alt="Profile"
                     className="w-full h-full object-cover"
-                    crossOrigin="anonymous" // Added fix for browser warnings
+                    crossOrigin="anonymous" // Fix browser tracking prevention
                   />
                 </div>
               </div>
-              
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleImageChange} 
-                accept="image/*"
-                hidden 
-              />
-
-              <motion.button
-                onClick={() => fileInputRef.current?.click()}
-                whileHover={{ scale: 1.1, rotate: 15 }}
-                whileTap={{ scale: 0.9 }}
-                className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-white text-indigo-600 p-2 md:p-3 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.15)] border border-indigo-50 hover:text-purple-600 transition-colors cursor-pointer"
-              >
+              <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" hidden />
+              <motion.button onClick={() => fileInputRef.current?.click()} whileHover={{ scale: 1.1, rotate: 15 }} whileTap={{ scale: 0.9 }} className="absolute bottom-1 right-1 md:bottom-2 md:right-2 bg-white text-indigo-600 p-2 md:p-3 rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.15)] border border-indigo-50 hover:text-purple-600 transition-colors cursor-pointer">
                 <Camera size={16} className="md:w-[18px] md:h-[18px]" />
               </motion.button>
             </motion.div>
-
             <h2 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight text-center">{name || 'User'}</h2>
-            <div className="flex items-center gap-1 text-slate-400 text-xs md:text-sm mt-1 font-medium bg-slate-100 px-3 py-1 rounded-full">
-              <Sparkles size={12} className="text-amber-400" /> Premium Member
-            </div>
+            <div className="flex items-center gap-1 text-slate-400 text-xs md:text-sm mt-1 font-medium bg-slate-100 px-3 py-1 rounded-full"><Sparkles size={12} className="text-amber-400" /> Premium Member</div>
           </div>
 
-          {/* Right Side: Inputs */}
+          {/* Form Section */}
           <div className="flex-1 space-y-5 md:space-y-6">
             <div className="flex items-center justify-between mb-2 md:mb-4">
               <h3 className="text-lg md:text-xl font-bold text-slate-800">Account Details</h3>
@@ -200,46 +169,20 @@ const ProfileSettings = () => {
             <div className="space-y-3 md:space-y-4">
               <EditableField label="Full Name" value={name} icon={<User size={18} className="md:w-5 md:h-5" />} onSave={setName} />
               <EditableField label="Phone Number" value={phone} icon={<Smartphone size={18} className="md:w-5 md:h-5" />} onSave={setPhone} />
-              
               <div className="group flex items-center justify-between p-3 md:p-4 rounded-2xl bg-slate-50 border border-slate-100 opacity-80 select-none">
                 <div className="flex-1 mr-4 flex items-center gap-3 md:gap-4">
-                  <div className="p-2.5 md:p-3 rounded-xl bg-slate-200 text-slate-400">
-                    <Mail size={18} className="md:w-5 md:h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Email Address</p>
-                    <p className="text-base md:text-lg font-bold text-slate-500 font-mono tracking-tight truncate">{email}</p>
-                  </div>
+                  <div className="p-2.5 md:p-3 rounded-xl bg-slate-200 text-slate-400"><Mail size={18} className="md:w-5 md:h-5" /></div>
+                  <div className="min-w-0"><p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">Email Address</p><p className="text-base md:text-lg font-bold text-slate-500 font-mono tracking-tight truncate">{email}</p></div>
                 </div>
-                <div className="p-2 bg-slate-200 rounded-lg text-slate-400 shrink-0" title="This field is locked">
-                  <Lock size={16} />
-                </div>
+                <div className="p-2 bg-slate-200 rounded-lg text-slate-400 shrink-0" title="Locked"><Lock size={16} /></div>
               </div>
             </div>
 
             <div className="pt-6 md:pt-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-6 sm:gap-4">
               <button className="text-sm font-semibold text-red-400 hover:text-red-500 transition-colors w-full sm:w-auto text-center">Reset Password</button>
-              
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                {/* CANCEL BUTTON: Redirects to Dashboard */}
-                <motion.button 
-                  onClick={() => router.push('/dashboard')}
-                  whileHover={{ scale: 1.02 }} 
-                  whileTap={{ scale: 0.95 }} 
-                  className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-500 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all"
-                >
-                  Cancel
-                </motion.button>
-                
-                {/* SAVE BUTTON: Saves then Redirects */}
-                <motion.button 
-                  onClick={handleSaveToBackend} 
-                  whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.4)" }} 
-                  whileTap={{ scale: 0.95 }} 
-                  className="w-full sm:w-auto px-8 py-3 text-sm font-bold text-white bg-linear-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  Save Changes
-                </motion.button>
+                <motion.button onClick={() => router.push('/dashboard')} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto px-6 py-3 text-sm font-bold text-slate-500 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all">Cancel</motion.button>
+                <motion.button onClick={handleSaveToBackend} whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.4)" }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto px-8 py-3 text-sm font-bold text-white bg-linear-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg hover:shadow-xl transition-all">Save Changes</motion.button>
               </div>
             </div>
           </div>
